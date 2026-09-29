@@ -6,8 +6,8 @@ tested setup.
 
 ## 2.5 GbE RJ45 SFP has no host carrier
 
-**Problem:** With host-side autonegotiation enabled, the switch indicated a
-2.5 Gb/s link and the router reported SFP `link_up`, but `eth2` had no carrier.
+**Problem:** The default host-side autonegotiation does not establish carrier
+with the tested 2.5 GbE module: the switch showed link, but router `eth2` did not.
 
 **Workaround:** Force the SFP host link to 2500BASE-X full duplex with
 autonegotiation disabled:
@@ -67,13 +67,15 @@ check the CPU policy stayed at 1.5 GHz. No governor service was found.
 **Workaround (custom init helper):** It selects `schedutil` without changing
 the configured 800–1800 MHz frequency bounds.
 
-Reboot persistence and any temperature or fan improvement remain unverified.
+A live check confirmed `schedutil`; requested steps ranged from 800 to
+1800 MHz under low load. CPU temperature stayed near 58.5°C; no before/after
+comparison establishes whether `schedutil` reduced it.
 
 ## Other observations
 
-- The fan follows the CPU thermal zone, not the SFP sensor. Available hwmon
-  data exposed PWM control but no fan RPM reading. The observations do not
-  identify one cause of heat or prove a fan-control defect.
+- The CPU thermal zone maps 38/45/60°C to PWM fan states 0/1/3 (2°C
+  hysteresis). At ~58.5°C, the fan was at state 1/6; the hottest MT7996 sensor
+  read 70°C. PWM was 80/255; no RPM reading was exposed.
 - An optional custom helper pins MT7996 NAPI threads to CPUs 1–3 and sets RPS
   mask `e`. No benchmark shows a throughput or latency improvement.
 - Raising the 5 GHz UCI transmit-power value did not override the regulatory
